@@ -1,3 +1,4 @@
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from pydantic_settings import BaseSettings
@@ -12,7 +13,20 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-engine = create_engine(settings.DATABASE_URL)
+# Normalize the PostgreSQL URL to use the installed psycopg2 driver
+database_url = settings.DATABASE_URL
+
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace(
+        "postgres://", "postgresql://", 1
+    )
+
+if database_url.startswith("postgresql://"):
+    database_url = database_url.replace(
+        "postgresql://", "postgresql+psycopg2://", 1
+    )
+
+engine = create_engine(database_url)
 
 SessionLocal = sessionmaker(
     autocommit=False,
@@ -22,14 +36,10 @@ SessionLocal = sessionmaker(
 
 Base = declarative_base()
 
-#   id 001
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
-##  Connection verify
-# with engine.connect() as connection:
-#     print("Database connected successfully!")
