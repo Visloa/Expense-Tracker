@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 .env
 .pytest_cache/
+# Local database backups
+*.dump
+*.backup
+*.sql
+
